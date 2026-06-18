@@ -15,11 +15,15 @@ import AiChatSidebar from "@/ee/ai-chat/components/ai-chat-sidebar.tsx";
 import { AppHeader } from "@/components/layouts/global/app-header.tsx";
 import Aside from "@/components/layouts/global/aside.tsx";
 import classes from "./app-shell.module.css";
-import { useTrialEndAction } from "@/ee/hooks/use-trial-end-action.tsx";
 import { useToggleSidebar } from "@/components/layouts/global/hooks/hooks/use-toggle-sidebar.ts";
 import GlobalSidebar from "@/components/layouts/global/global-sidebar.tsx";
 import { ASIDE_PANEL_ID } from "@/hooks/use-toggle-aside.tsx";
 import { MAIN_CONTENT_ID, SkipToMain } from "@/components/ui/skip-to-main.tsx";
+import { Helmet } from "react-helmet-async";
+import { useAtomValue } from "jotai";
+import { workspaceAtom } from "@/features/user/atoms/current-user-atom.ts";
+import { getAvatarUrl } from "@/lib/config.ts";
+import { AvatarIconType } from "@/features/attachments/types/attachment.types.ts";
 
 export default function GlobalAppShell({
   children,
@@ -27,7 +31,6 @@ export default function GlobalAppShell({
   children: React.ReactNode;
 }) {
   const { t } = useTranslation();
-  useTrialEndAction();
   const [mobileOpened] = useAtom(mobileSidebarAtom);
   const toggleMobile = useToggleSidebar(mobileSidebarAtom);
   const [desktopOpened] = useAtom(desktopSidebarAtom);
@@ -81,9 +84,23 @@ export default function GlobalAppShell({
   const isAiRoute = location.pathname.startsWith("/ai");
   const isPageRoute = location.pathname.includes("/p/");
   const showGlobalSidebar = !isSpaceRoute && !isSettingsRoute && !isAiRoute;
+  const workspace = useAtomValue(workspaceAtom);
+  const workspaceLogo = getAvatarUrl(workspace?.logo, AvatarIconType.WORKSPACE_ICON);
 
   return (
     <>
+      <Helmet>
+        <link
+          rel="icon"
+          sizes="32x32"
+          href={workspaceLogo || "/icons/favicon-32x32.png"}
+        />
+        <link
+          rel="icon"
+          sizes="16x16"
+          href={workspaceLogo || "/icons/favicon-16x16.png"}
+        />
+      </Helmet>
       <SkipToMain />
       <AppShell
       header={{ height: 45 }}

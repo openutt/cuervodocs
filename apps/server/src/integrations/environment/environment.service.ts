@@ -151,7 +151,7 @@ export class EnvironmentService {
   }
 
   getMailFromName(): string {
-    return this.configService.get<string>('MAIL_FROM_NAME', 'Docmost');
+    return this.configService.get<string>('MAIL_FROM_NAME', 'Cuervodocs');
   }
 
   getMailBlockedRecipientDomains(): string[] {
@@ -212,22 +212,6 @@ export class EnvironmentService {
 
   isSelfHosted(): boolean {
     return !this.isCloud();
-  }
-
-  getStripePublishableKey(): string {
-    return this.configService.get<string>('STRIPE_PUBLISHABLE_KEY');
-  }
-
-  getStripeSecretKey(): string {
-    return this.configService.get<string>('STRIPE_SECRET_KEY');
-  }
-
-  getStripeWebhookSecret(): string {
-    return this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
-  }
-
-  getBillingTrialDays(): number {
-    return parseInt(this.configService.get<string>('BILLING_TRIAL_DAYS', '14'));
   }
 
   getCollabUrl(): string {

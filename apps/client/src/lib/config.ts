@@ -2,6 +2,8 @@ import bytes from "bytes";
 import { castToBoolean } from "@/lib/utils.tsx";
 import { AvatarIconType } from "@/features/attachments/types/attachment.types.ts";
 import { sanitizeUrl } from "@docmost/editor-ext";
+import { useAtomValue } from "jotai";
+import { workspaceAtom } from "@/features/user/atoms/current-user-atom.ts";
 
 declare global {
   interface Window {
@@ -10,7 +12,12 @@ declare global {
 }
 
 export function getAppName(): string {
-  return "Docmost";
+  return "Cuervodocs";
+}
+
+export function useAppName(): string {
+  const workspace = useAtomValue(workspaceAtom);
+  return workspace?.name || getAppName();
 }
 
 export function getAppUrl(): string {
@@ -82,10 +89,6 @@ export function getFileImportSizeLimit() {
 
 export function getDrawioUrl() {
   return getConfigValue("DRAWIO_URL", "https://embed.diagrams.net");
-}
-
-export function getBillingTrialDays() {
-  return getConfigValue("BILLING_TRIAL_DAYS");
 }
 
 export function getPostHogHost() {
