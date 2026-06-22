@@ -6,7 +6,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { LicenseCheckService } from '../../../integrations/environment/license-check.service';
 import { UserSessionRepo } from '@docmost/db/repos/session/user-session.repo';
 import { CreateWorkspaceDto } from '../dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from '../dto/update-workspace.dto';
@@ -18,7 +17,6 @@ import { WorkspaceRepo } from '@docmost/db/repos/workspace/workspace.repo';
 import { KyselyDB, KyselyTransaction } from '@docmost/db/types/kysely.types';
 import { executeTx } from '@docmost/db/utils';
 import { InjectKysely } from 'nestjs-kysely';
-import { Feature } from '../../../common/features';
 import { User } from '@docmost/db/types/entity.types';
 import { GroupUserRepo } from '@docmost/db/repos/group/group-user.repo';
 import { GroupRepo } from '@docmost/db/repos/group/group.repo';
@@ -62,7 +60,6 @@ export class WorkspaceService {
     private userRepo: UserRepo,
     private environmentService: EnvironmentService,
     private domainService: DomainService,
-    private licenseCheckService: LicenseCheckService,
     private shareRepo: ShareRepo,
     private watcherRepo: WatcherRepo,
     private favoriteRepo: FavoriteRepo,
@@ -89,7 +86,7 @@ export class WorkspaceService {
   async getWorkspacePublicData(workspaceId: string) {
     const workspace = await this.db
       .selectFrom('workspaces')
-      .select(['id', 'name', 'logo', 'hostname', 'enforceSso', 'licenseKey', 'plan'])
+      .select(['id', 'name', 'logo', 'hostname', 'enforceSso', 'plan'])
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -110,9 +107,7 @@ export class WorkspaceService {
       throw new NotFoundException('Workspace not found');
     }
 
-    const { licenseKey, plan, ...rest } = workspace;
-
-    return rest;
+    return workspace;
   }
 
   async create(
@@ -286,7 +281,7 @@ export class WorkspaceService {
     ) {
       const ws = await this.db
         .selectFrom('workspaces')
-        .select(['id', 'licenseKey', 'plan', 'trashRetentionDays'])
+        .select(['id', 'trashRetentionDays'])
         .where('id', '=', workspaceId)
         .executeTakeFirst();
 
@@ -294,40 +289,11 @@ export class WorkspaceService {
         throw new NotFoundException('Workspace not found');
       }
 
-      if (typeof updateWorkspaceDto.mcpEnabled !== 'undefined') {
-        if (!this.licenseCheckService.hasFeature(ws.licenseKey, 'mcp', ws.plan)) {
-          throw new ForbiddenException(
-            'This feature requires a valid license',
-          );
-        }
-      }
-
-      if (typeof updateWorkspaceDto.isScimEnabled !== 'undefined') {
-        if (!this.licenseCheckService.hasFeature(ws.licenseKey, Feature.SCIM, ws.plan)) {
-          throw new ForbiddenException(
-            'This feature requires a valid license',
-          );
-        }
-      }
-
-      if (
-        typeof updateWorkspaceDto.disablePublicSharing !== 'undefined' ||
-        typeof updateWorkspaceDto.trashRetentionDays !== 'undefined' ||
-        typeof updateWorkspaceDto.restrictApiToAdmins !== 'undefined' ||
-        typeof updateWorkspaceDto.allowMemberTemplates !== 'undefined'
-      ) {
-        if (!this.licenseCheckService.hasFeature(ws.licenseKey, Feature.SECURITY_SETTINGS, ws.plan)) {
-          throw new ForbiddenException(
-            'This feature requires a valid license',
-          );
-        }
-      }
-
       if (
         typeof updateWorkspaceDto.trashRetentionDays !== 'undefined' &&
-        updateWorkspaceDto.trashRetentionDays !== ws.trashRetentionDays
+        updateWorkspaceDto.trashRetentionDays !== Number(ws.trashRetentionDays)
       ) {
-        before.trashRetentionDays = ws.trashRetentionDays;
+        before.trashRetentionDays = Number(ws.trashRetentionDays);
         after.trashRetentionDays = updateWorkspaceDto.trashRetentionDays;
       }
     }
@@ -484,7 +450,6 @@ export class WorkspaceService {
 
     const workspace = await this.workspaceRepo.findById(workspaceId, {
       withMemberCount: true,
-      withLicenseKey: true,
     });
 
     const columnChanges = diffAuditTrackedFields(
@@ -514,8 +479,7 @@ export class WorkspaceService {
       });
     }
 
-    const { licenseKey, ...rest } = workspace;
-    return rest;
+    return workspace;
   }
 
   async getWorkspaceUsers(

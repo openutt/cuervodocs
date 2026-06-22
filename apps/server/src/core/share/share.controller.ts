@@ -81,10 +81,7 @@ export class ShareController {
 
     return {
       ...shareData,
-      features: this.licenseCheckService.resolveFeatures(
-        workspace.licenseKey,
-        workspace.plan,
-      ),
+      features: this.licenseCheckService.resolveFeatures(),
     };
   }
 
@@ -272,10 +269,7 @@ export class ShareController {
 
     return {
       ...treeData,
-      features: this.licenseCheckService.resolveFeatures(
-        workspace.licenseKey,
-        workspace.plan,
-      ),
+      features: this.licenseCheckService.resolveFeatures(),
     };
   }
 }
