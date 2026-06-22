@@ -32,10 +32,8 @@ export class UserController {
       workspace.id,
     );
 
-    const { licenseKey, ...rest } = workspace;
-
     const workspaceInfo = {
-      ...rest,
+      ...workspace,
       memberCount,
     };
 

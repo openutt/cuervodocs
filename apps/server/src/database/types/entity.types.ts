@@ -24,7 +24,6 @@ import {
   WorkspaceInvitations,
   UserTokens,
   Backlinks,
-  Billing as BillingSubscription,
   AuthProviders,
   AuthAccounts,
   Shares,
@@ -123,11 +122,6 @@ export type UpdatableUserToken = Updateable<Omit<UserTokens, 'id'>>;
 export type Backlink = Selectable<Backlinks>;
 export type InsertableBacklink = Insertable<Backlink>;
 export type UpdatableBacklink = Updateable<Omit<Backlink, 'id'>>;
-
-// Billing
-export type Billing = Selectable<BillingSubscription>;
-export type InsertableBilling = Insertable<BillingSubscription>;
-export type UpdatableBilling = Updateable<Omit<BillingSubscription, 'id'>>;
 
 // Auth Provider
 export type AuthProvider = Selectable<AuthProviders>;
